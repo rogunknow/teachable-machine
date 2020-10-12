@@ -38,23 +38,44 @@
         for (let i = 0; i < maxPredictions; i++) { // and class labels
             labelContainer.appendChild(document.createElement("div"));
         }
-        webcam.stop();
     }
 
-    async function loop() {
-        webcam.update(); // update the webcam frame
-        await predict();
-        window.requestAnimationFrame(loop);
+   
+async function loop() {
+    webcam.update(); 
+    let ans = await predict();
+    if (!ans) {
+      window.requestAnimationFrame(loop);
     }
+  
+    if ((ans === "you")) {
+      console.log("you");
+      window.location.href = "https://hacktoberfest.digitalocean.com/faq"; 
+    }
+    else{
+        console.log("it's me");
+    }  
+    console.log(window);
+  }
+  
 
-    // run the webcam image through the image model
-    async function predict() {
-        // predict can take in an image, video or canvas html element
-        const prediction = await model.predict(webcam.canvas);
-        for (let i = 0; i < maxPredictions; i++) {
-            const classPrediction =
-                prediction[i].className + ": " + prediction[i].probability.toFixed(2);
-            labelContainer.childNodes[i].innerHTML = classPrediction;
-        }
+  async function predict() {
+    const prediction = await model.predict(webcam.canvas);
+    console.log(prediction);
+  
+    let ans;
+  
+    for (let i = 0; i < maxPredictions; i++) {
+      const classPrediction =
+        prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+      labelContainer.childNodes[i].innerHTML = classPrediction;
+  
+      if (prediction[i].probability.toFixed(2) > 0.9) {
+        ans = prediction[i].className;
+      }
     }
+  
+    return ans;
+  }
+
 </script>
